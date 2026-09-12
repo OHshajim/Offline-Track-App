@@ -274,6 +274,7 @@ class MeetingListScreen extends StatelessWidget {
                           );
                         },
                       ),
+                    ),
           ),
         ],
       ),

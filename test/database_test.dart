@@ -8,6 +8,7 @@ import 'package:offlinetrack/core/models/reminder_model.dart';
 
 void main() {
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   });
@@ -35,7 +36,7 @@ void main() {
       );
 
       final id = await dbHelper.insertTask(task);
-      expect(id, isGreaterThan(0));
+      expect(id, greaterThan(0));
 
       final tasks = await dbHelper.getAllTasks();
       expect(tasks.length, equals(1));
@@ -62,7 +63,7 @@ void main() {
       );
 
       final id = await dbHelper.insertMeeting(meeting);
-      expect(id, isGreaterThan(0));
+      expect(id, greaterThan(0));
 
       final meetings = await dbHelper.getAllMeetings();
       expect(meetings.length, equals(1));
@@ -83,7 +84,7 @@ void main() {
       );
 
       final id = await dbHelper.insertLead(lead);
-      expect(id, isGreaterThan(0));
+      expect(id, greaterThan(0));
 
       final leads = await dbHelper.getAllLeads();
       expect(leads.length, equals(1));
@@ -102,7 +103,7 @@ void main() {
       );
 
       final id = await dbHelper.insertReminder(reminder);
-      expect(id, isGreaterThan(0));
+      expect(id, greaterThan(0));
 
       final pendingReminders = await dbHelper.getPendingReminders();
       expect(pendingReminders.length, equals(1));

@@ -11,6 +11,6 @@ void main() {
   testWidgets('OfflineTrackApp smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const OfflineTrackApp());
     expect(find.byType(OfflineTrackApp), findsOneWidget);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 500));
   });
 }

@@ -521,3 +521,94 @@ class _EmptyStateViewState extends State<EmptyStateView>
     );
   }
 }
+
+/// Signature Branding Badge for Shajim Ahmed
+class ShajimSignatureBadge extends StatelessWidget {
+  final bool isCompact;
+
+  const ShajimSignatureBadge({
+    super.key,
+    this.isCompact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isCompact) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppTheme.accentCyan.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.25)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.code_rounded, size: 11, color: AppTheme.accentCyan),
+            SizedBox(width: 4),
+            Text(
+              'Made by Shajim Ahmed',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.accentCyan,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentCyan.withValues(alpha: 0.08),
+            blurRadius: 16,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.accentCyan.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.verified_user_rounded, size: 18, color: AppTheme.accentCyan),
+          ),
+          const SizedBox(width: 12),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Made by Shajim Ahmed',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'OfflineTrack Mobile Architecture & Production Edition',
+                style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

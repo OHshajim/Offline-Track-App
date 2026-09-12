@@ -275,6 +275,7 @@ class LeadListScreen extends StatelessWidget {
                           );
                         },
                       ),
+                    ),
           ),
         ],
       ),

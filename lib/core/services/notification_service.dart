@@ -143,7 +143,11 @@ class NotificationService {
         return;
       }
 
-      final tzScheduledTime = tz.TZDateTime.from(scheduledDate, tz.local);
+      try {
+        tz.initializeTimeZones();
+      } catch (_) {}
+
+      final tzScheduledTime = tz.TZDateTime.from(scheduledDate, tz.getLocation('UTC'));
 
       await _notificationsPlugin.zonedSchedule(
         id,

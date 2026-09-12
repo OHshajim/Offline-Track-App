@@ -8,6 +8,7 @@ import '../../providers/meeting_provider.dart';
 import '../../providers/lead_provider.dart';
 import '../../core/services/voice_assistant_service.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/interactive_logo_widget.dart';
 import '../../widgets/voice_orb_widget.dart';
 import '../../widgets/voice_assistant_modal.dart';
 import '../tasks/task_form_screen.dart';
@@ -185,27 +186,30 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Scaffold(
       appBar: AppBar(
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryCyan, AppTheme.accentViolet],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.offline_bolt_rounded, size: 20, color: Colors.white),
-            ),
+            const InteractiveLogoWidget(size: 34),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('OfflineTrack',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-                Text(DateFormat('EEE, MMM d').format(DateTime.now()),
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w400)),
+                const Text(
+                  'OfflineTrack',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                Text(
+                  DateFormat('EEE, MMM d').format(DateTime.now()),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ],
             ),
           ],
@@ -249,6 +253,11 @@ class _DashboardScreenState extends State<DashboardScreen>
               color: AppTheme.primaryCyan,
               child: Column(
                 children: [
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: ShajimSignatureBadge(isCompact: true),
+                  ),
                   const SizedBox(height: 10),
 
                   // Metric Cards Row
@@ -332,13 +341,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: TabBar(
                       controller: _tabController,
+                      indicatorSize: TabBarIndicatorSize.tab,
                       indicator: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [AppTheme.primaryCyan, AppTheme.cyanDark],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryCyan.withAlpha(76),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      indicatorPadding: const EdgeInsets.all(3),
+                      indicatorPadding: const EdgeInsets.all(4),
                       labelColor: const Color(0xFF060B14),
                       unselectedLabelColor: AppTheme.textSecondary,
                       labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
@@ -351,15 +368,20 @@ class _DashboardScreenState extends State<DashboardScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Flexible(
-                                child: Text('Overdue (${dashboard.overdueItems.length})',
-                                    overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  'Overdue (${dashboard.overdueItems.length})',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               if (dashboard.overdueItems.isNotEmpty) ...[
                                 const SizedBox(width: 4),
                                 Container(
-                                  width: 6, height: 6,
+                                  width: 6,
+                                  height: 6,
                                   decoration: const BoxDecoration(
-                                    color: AppTheme.accentRose, shape: BoxShape.circle),
+                                    color: AppTheme.accentRose,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
                               ],
                             ],

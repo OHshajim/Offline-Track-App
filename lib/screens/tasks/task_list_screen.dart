@@ -349,6 +349,7 @@ class TaskListScreen extends StatelessWidget {
                           );
                         },
                       ),
+                    ),
           ),
         ],
       ),

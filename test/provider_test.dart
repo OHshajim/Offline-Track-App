@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:offlinetrack/core/database/database_helper.dart';
 import 'package:offlinetrack/core/models/task_model.dart';
+import 'package:offlinetrack/core/models/meeting_model.dart';
+import 'package:offlinetrack/core/models/lead_model.dart';
 import 'package:offlinetrack/providers/task_provider.dart';
 import 'package:offlinetrack/providers/meeting_provider.dart';
 import 'package:offlinetrack/providers/lead_provider.dart';
@@ -9,6 +11,7 @@ import 'package:offlinetrack/providers/dashboard_provider.dart';
 
 void main() {
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   });
@@ -48,6 +51,24 @@ void main() {
       provider.setSearchQuery('Groceries');
       expect(provider.filteredTasks.length, equals(1));
       expect(provider.filteredTasks.first.title, equals('Buy Groceries'));
+    });
+
+    test('MeetingProvider and LeadProvider state filtering work correctly', () async {
+      final meetingProvider = MeetingProvider();
+      final leadProvider = LeadProvider();
+
+      await meetingProvider.addMeeting(MeetingModel(
+        title: 'Team Sync',
+        datetime: DateTime.now().add(const Duration(hours: 1)),
+      ));
+
+      await leadProvider.addLead(LeadModel(
+        name: 'John Smith',
+        status: 'New',
+      ));
+
+      expect(meetingProvider.meetings.length, equals(1));
+      expect(leadProvider.leads.length, equals(1));
     });
 
     test('DashboardProvider aggregates tasks, meetings, and leads accurately', () async {

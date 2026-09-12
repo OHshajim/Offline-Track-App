@@ -9,6 +9,7 @@ import 'package:offlinetrack/providers/dashboard_provider.dart';
 
 void main() {
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   });

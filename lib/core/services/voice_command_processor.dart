@@ -73,12 +73,13 @@ class VoiceCommandProcessor {
     // ==========================================
     // 2. DAILY BRIEFING / WHAT DO I HAVE TO DO TODAY
     // ==========================================
-    if (text.contains('today') ||
-        text.contains('brief') ||
-        text.contains('schedule') ||
-        text.contains('what do i have') ||
+    if (text == 'today' ||
+        text.contains('daily briefing') ||
+        text.contains('briefing') ||
+        text == 'my schedule' ||
+        text.contains('what do i have to do') ||
         text.contains('my plan') ||
-        text.contains('overview')) {
+        text.contains('daily overview')) {
       final todayTasks = taskProvider.tasks.where((t) => t.isDueToday && !t.isCompleted).toList();
       final todayMeetings = meetingProvider.todayMeetings;
       final todayLeads = leadProvider.leads.where((l) => l.isFollowupDueToday).toList();
@@ -143,10 +144,12 @@ class VoiceCommandProcessor {
     // ==========================================
     // 4. CHECK OVERDUE / ALERTS
     // ==========================================
-    if (text.contains('alert') ||
-        text.contains('overdue') ||
-        text.contains('urgent') ||
-        text.contains('warn')) {
+    if (text == 'alerts' ||
+        text == 'overdue' ||
+        text.contains('check alert') ||
+        text.contains('show overdue') ||
+        text.contains('check overdue') ||
+        text.contains('urgent alerts')) {
       final overdueTasks = taskProvider.tasks.where((t) => t.isOverdue).toList();
       final overdueLeads = leadProvider.leads.where((l) => l.isFollowupOverdue).toList();
 
@@ -169,7 +172,25 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 5. SCHEDULE MEETING
+    // 5. EXPLICIT TASK CREATION
+    // ==========================================
+    final isExplicitTask = text.startsWith('remind me to') ||
+        text.startsWith('add task') ||
+        text.startsWith('create task') ||
+        text.startsWith('remember to') ||
+        text.startsWith('todo') ||
+        text.startsWith('to do');
+
+    if (isExplicitTask) {
+      return await _createTaskFromText(
+        rawCommand: rawCommand,
+        text: text,
+        taskProvider: taskProvider,
+      );
+    }
+
+    // ==========================================
+    // 6. SCHEDULE MEETING
     // ==========================================
     if (text.contains('meeting') && (text.contains('schedule') || text.contains('add') || text.contains('set') || text.contains('create'))) {
       String title = text
@@ -199,7 +220,7 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 6. ADD CLIENT LEAD
+    // 7. ADD CLIENT LEAD
     // ==========================================
     if (text.contains('lead') || text.contains('client') || text.contains('prospect')) {
       String name = text
@@ -256,8 +277,20 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 8. DEFAULT: CREATE TASK / REMINDER
+    // 9. DEFAULT: CREATE TASK / REMINDER
     // ==========================================
+    return await _createTaskFromText(
+      rawCommand: rawCommand,
+      text: text,
+      taskProvider: taskProvider,
+    );
+  }
+
+  static Future<VoiceCommandResult> _createTaskFromText({
+    required String rawCommand,
+    required String text,
+    required TaskProvider taskProvider,
+  }) async {
     String taskTitle = text
         .replaceAll(RegExp(r'^(remind me to|add task|create task|remember to|todo|to do)\s+', caseSensitive: false), '')
         .trim();
@@ -339,6 +372,9 @@ class VoiceCommandProcessor {
 
   static String _capitalize(String s) {
     if (s.isEmpty) return s;
-    return s[0].toUpperCase() + s.substring(1);
+    return s.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1);
+    }).join(' ');
   }
 }

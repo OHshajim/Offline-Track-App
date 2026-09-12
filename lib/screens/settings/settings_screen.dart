@@ -459,11 +459,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // App Version Footer
+          const ShajimSignatureBadge(isCompact: false),
+
+          const SizedBox(height: 14),
+
           const Center(
             child: Text(
-              'OfflineTrack v1.0.0 (Local-First Edition)\nBuilt with Flutter & SQLite',
-              style: TextStyle(fontSize: 11, color: AppTheme.textMuted, height: 1.5),
+              'OfflineTrack v1.0.0 (Local-First Edition)',
+              style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
               textAlign: TextAlign.center,
             ),
           ),
