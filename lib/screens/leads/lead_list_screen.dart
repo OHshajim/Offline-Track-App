@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/lead_provider.dart';
 import '../../widgets/common_widgets.dart';
+import '../../screens/settings/settings_screen.dart';
 import 'lead_detail_screen.dart';
 import 'lead_form_screen.dart';
 
@@ -22,6 +23,12 @@ class LeadListScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => leadProvider.loadLeads(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, size: 22),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -122,24 +129,37 @@ class LeadListScreen extends StatelessWidget {
             child: leadProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : leadProvider.filteredLeads.isEmpty
-                    ? EmptyStateView(
-                        icon: Icons.person_search_rounded,
-                        title: 'No Leads Found',
-                        message: leadProvider.searchQuery.isNotEmpty
-                            ? 'No leads matching your current search query.'
-                            : 'Start tracking client leads and follow-up reminders offline.',
-                        buttonText: 'Add First Lead',
-                        onButtonPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LeadFormScreen()),
-                          );
-                        },
+                    ? RefreshIndicator(
+                        onRefresh: () => leadProvider.loadLeads(),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            alignment: Alignment.center,
+                            child: EmptyStateView(
+                              icon: Icons.person_search_rounded,
+                              title: 'No Leads Found',
+                              message: leadProvider.searchQuery.isNotEmpty
+                                  ? 'No leads matching your current search query.'
+                                  : 'Start tracking client leads and follow-up reminders offline.',
+                              buttonText: 'Add First Lead',
+                              onButtonPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const LeadFormScreen()),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(top: 4, bottom: 80),
-                        itemCount: leadProvider.filteredLeads.length,
-                        itemBuilder: (context, index) {
+                    : RefreshIndicator(
+                        onRefresh: () => leadProvider.loadLeads(),
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(top: 4, bottom: 80),
+                          itemCount: leadProvider.filteredLeads.length,
+                          itemBuilder: (context, index) {
                           final lead = leadProvider.filteredLeads[index];
                           final isOverdue = lead.isFollowupOverdue;
                           final isDueToday = lead.isFollowupDueToday;

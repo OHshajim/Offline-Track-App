@@ -117,7 +117,7 @@ class GlowCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(borderRadius),
-          splashColor: (glowColor ?? AppTheme.primaryViolet).withValues(alpha: 0.15),
+          splashColor: (glowColor ?? AppTheme.primaryCyan).withValues(alpha: 0.15),
           highlightColor: Colors.white.withValues(alpha: 0.04),
           child: Ink(
             padding: padding,

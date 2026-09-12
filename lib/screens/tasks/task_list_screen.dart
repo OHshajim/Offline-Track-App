@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/task_provider.dart';
 import '../../widgets/common_widgets.dart';
+import '../../screens/settings/settings_screen.dart';
 import 'task_form_screen.dart';
 
 class TaskListScreen extends StatelessWidget {
@@ -25,6 +26,12 @@ class TaskListScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => taskProvider.loadTasks(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, size: 22),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -166,24 +173,37 @@ class TaskListScreen extends StatelessWidget {
             child: taskProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : taskProvider.filteredTasks.isEmpty
-                    ? EmptyStateView(
-                        icon: Icons.assignment_turned_in_rounded,
-                        title: 'No Tasks Found',
-                        message: taskProvider.searchQuery.isNotEmpty
-                            ? 'No tasks match your search filters.'
-                            : 'No tasks yet. Create one to stay organized offline!',
-                        buttonText: 'Add First Task',
-                        onButtonPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const TaskFormScreen()),
-                          );
-                        },
+                    ? RefreshIndicator(
+                        onRefresh: () => taskProvider.loadTasks(),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            alignment: Alignment.center,
+                            child: EmptyStateView(
+                              icon: Icons.assignment_turned_in_rounded,
+                              title: 'No Tasks Found',
+                              message: taskProvider.searchQuery.isNotEmpty
+                                  ? 'No tasks match your search filters.'
+                                  : 'No tasks yet. Create one to stay organized offline!',
+                              buttonText: 'Add First Task',
+                              onButtonPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const TaskFormScreen()),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(top: 6, bottom: 80),
-                        itemCount: taskProvider.filteredTasks.length,
-                        itemBuilder: (context, index) {
+                    : RefreshIndicator(
+                        onRefresh: () => taskProvider.loadTasks(),
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(top: 6, bottom: 80),
+                          itemCount: taskProvider.filteredTasks.length,
+                          itemBuilder: (context, index) {
                           final task = taskProvider.filteredTasks[index];
 
                           return AnimatedEntrance(

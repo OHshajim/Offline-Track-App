@@ -109,7 +109,39 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 3. CHECK OVERDUE / ALERTS
+    // 3. SEARCH COMMANDS
+    // ==========================================
+    if (text.startsWith('find') || text.startsWith('search')) {
+      final query = text
+          .replaceAll(RegExp(r'^(find|search)\s+(task|lead|meeting|client)?\s*', caseSensitive: false), '')
+          .trim();
+
+      final taskMatches = taskProvider.tasks.where((t) =>
+          t.title.toLowerCase().contains(query) || (t.description?.toLowerCase().contains(query) ?? false)).toList();
+      final leadMatches = leadProvider.leads.where((l) =>
+          l.name.toLowerCase().contains(query) || (l.notes?.toLowerCase().contains(query) ?? false)).toList();
+      final meetingMatches = meetingProvider.meetings.where((m) =>
+          m.title.toLowerCase().contains(query) || (m.notes?.toLowerCase().contains(query) ?? false)).toList();
+
+      final totalMatches = taskMatches.length + leadMatches.length + meetingMatches.length;
+
+      if (totalMatches == 0) {
+        return VoiceCommandResult(
+          speechResponse: "No items matching '$query' were found in your offline records.",
+          actionTitle: "Search Results",
+          details: "Query: '$query' • 0 matches",
+        );
+      }
+
+      return VoiceCommandResult(
+        speechResponse: "Found $totalMatches matching record${totalMatches != 1 ? 's' : ''} for '$query': ${taskMatches.length} tasks, ${meetingMatches.length} meetings, and ${leadMatches.length} client leads.",
+        actionTitle: "Search Results",
+        details: "${taskMatches.length} Tasks • ${meetingMatches.length} Meetings • ${leadMatches.length} Leads",
+      );
+    }
+
+    // ==========================================
+    // 4. CHECK OVERDUE / ALERTS
     // ==========================================
     if (text.contains('alert') ||
         text.contains('overdue') ||
@@ -137,19 +169,15 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 4. SCHEDULE MEETING
+    // 5. SCHEDULE MEETING
     // ==========================================
     if (text.contains('meeting') && (text.contains('schedule') || text.contains('add') || text.contains('set') || text.contains('create'))) {
       String title = text
           .replaceAll(RegExp(r'^(schedule|add|set|create)\s+(a\s+)?meeting(\s+with)?', caseSensitive: false), '')
           .trim();
 
-      DateTime meetingTime = DateTime.now().add(const Duration(hours: 2));
-
-      if (title.contains('tomorrow')) {
-        meetingTime = DateTime.now().add(const Duration(days: 1));
-        title = title.replaceAll('tomorrow', '').trim();
-      }
+      DateTime meetingTime = _parseRelativeDate(text, defaultOffset: const Duration(hours: 2));
+      title = _cleanDateKeywords(title);
 
       if (title.isEmpty) title = "Important Discussion";
 
@@ -171,23 +199,26 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 5. ADD CLIENT LEAD
+    // 6. ADD CLIENT LEAD
     // ==========================================
     if (text.contains('lead') || text.contains('client') || text.contains('prospect')) {
       String name = text
           .replaceAll(RegExp(r'^(add|create|new)\s+(a\s+)?(client|lead|prospect)(\s+named|\s+for)?', caseSensitive: false), '')
           .trim();
 
+      DateTime followupTime = _parseRelativeDate(text, defaultOffset: const Duration(days: 2));
+      name = _cleanDateKeywords(name);
+
       if (name.isEmpty) name = "New Client Prospect";
 
       final newLead = LeadModel(
         name: _capitalize(name),
         status: 'New',
-        nextFollowup: DateTime.now().add(const Duration(days: 2)),
+        nextFollowup: followupTime,
       );
 
       await leadProvider.addLead(newLead);
-      final response = "Client lead '${newLead.name}' has been added to your offline pipeline with a follow-up scheduled in two days.";
+      final response = "Client lead '${newLead.name}' has been added to your offline pipeline with a follow-up scheduled.";
 
       return VoiceCommandResult(
         speechResponse: response,
@@ -197,7 +228,7 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 6. COMPLETE / FINISH TASK
+    // 7. COMPLETE / FINISH TASK
     // ==========================================
     if (text.contains('mark') || text.contains('finish') || text.contains('done') || text.contains('complete')) {
       final clean = text
@@ -225,7 +256,7 @@ class VoiceCommandProcessor {
     }
 
     // ==========================================
-    // 7. DEFAULT: CREATE TASK / REMINDER
+    // 8. DEFAULT: CREATE TASK / REMINDER
     // ==========================================
     String taskTitle = text
         .replaceAll(RegExp(r'^(remind me to|add task|create task|remember to|todo|to do)\s+', caseSensitive: false), '')
@@ -233,18 +264,19 @@ class VoiceCommandProcessor {
 
     if (taskTitle.isEmpty) taskTitle = rawCommand;
 
-    DateTime dueTime = DateTime.now().add(const Duration(hours: 3));
+    DateTime dueTime = _parseRelativeDate(text, defaultOffset: const Duration(hours: 3));
     String priority = 'Medium';
 
     if (text.contains('urgent') || text.contains('high priority') || text.contains('important')) {
       priority = 'High';
       taskTitle = taskTitle.replaceAll(RegExp(r'(urgent|high priority|important)', caseSensitive: false), '').trim();
+    } else if (text.contains('low priority')) {
+      priority = 'Low';
+      taskTitle = taskTitle.replaceAll(RegExp(r'(low priority)', caseSensitive: false), '').trim();
     }
 
-    if (text.contains('tomorrow')) {
-      dueTime = DateTime.now().add(const Duration(days: 1));
-      taskTitle = taskTitle.replaceAll('tomorrow', '').trim();
-    }
+    taskTitle = _cleanDateKeywords(taskTitle);
+    if (taskTitle.isEmpty) taskTitle = "Untitled Offline Task";
 
     final newTask = TaskModel(
       title: _capitalize(taskTitle),
@@ -263,6 +295,46 @@ class VoiceCommandProcessor {
       actionTitle: "Task Created",
       details: "${newTask.title} (Due $dueFormatted)",
     );
+  }
+
+  static DateTime _parseRelativeDate(String text, {required Duration defaultOffset}) {
+    final now = DateTime.now();
+
+    // Check "in X days"
+    final daysMatch = RegExp(r'in (\d+) days?').firstMatch(text);
+    if (daysMatch != null) {
+      final d = int.parse(daysMatch.group(1)!);
+      return now.add(Duration(days: d));
+    }
+
+    // Check "in X hours"
+    final hoursMatch = RegExp(r'in (\d+) hours?').firstMatch(text);
+    if (hoursMatch != null) {
+      final h = int.parse(hoursMatch.group(1)!);
+      return now.add(Duration(hours: h));
+    }
+
+    if (text.contains('tomorrow')) {
+      return now.add(const Duration(days: 1));
+    }
+
+    if (text.contains('tonight')) {
+      return DateTime(now.year, now.month, now.day, 20, 0);
+    }
+
+    if (text.contains('next week')) {
+      return now.add(const Duration(days: 7));
+    }
+
+    return now.add(defaultOffset);
+  }
+
+  static String _cleanDateKeywords(String input) {
+    return input
+        .replaceAll(RegExp(r'in \d+ days?', caseSensitive: false), '')
+        .replaceAll(RegExp(r'in \d+ hours?', caseSensitive: false), '')
+        .replaceAll(RegExp(r'(tomorrow|tonight|next week)', caseSensitive: false), '')
+        .trim();
   }
 
   static String _capitalize(String s) {

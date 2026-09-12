@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/meeting_provider.dart';
 import '../../widgets/common_widgets.dart';
+import '../../screens/settings/settings_screen.dart';
 import 'meeting_form_screen.dart';
 
 class MeetingListScreen extends StatelessWidget {
@@ -22,6 +23,12 @@ class MeetingListScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => meetingProvider.loadMeetings(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, size: 22),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -81,24 +88,37 @@ class MeetingListScreen extends StatelessWidget {
             child: meetingProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : meetingProvider.filteredMeetings.isEmpty
-                    ? EmptyStateView(
-                        icon: Icons.calendar_month_rounded,
-                        title: 'No Meetings Found',
-                        message: meetingProvider.filter == 'Today'
-                            ? 'No meetings scheduled for today.'
-                            : 'No meetings found in this view. Schedule one to receive offline alerts.',
-                        buttonText: 'Schedule Meeting',
-                        onButtonPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const MeetingFormScreen()),
-                          );
-                        },
+                    ? RefreshIndicator(
+                        onRefresh: () => meetingProvider.loadMeetings(),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            alignment: Alignment.center,
+                            child: EmptyStateView(
+                              icon: Icons.calendar_month_rounded,
+                              title: 'No Meetings Found',
+                              message: meetingProvider.filter == 'Today'
+                                  ? 'No meetings scheduled for today.'
+                                  : 'No meetings found in this view. Schedule one to receive offline alerts.',
+                              buttonText: 'Schedule Meeting',
+                              onButtonPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const MeetingFormScreen()),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(top: 4, bottom: 80),
-                        itemCount: meetingProvider.filteredMeetings.length,
-                        itemBuilder: (context, index) {
+                    : RefreshIndicator(
+                        onRefresh: () => meetingProvider.loadMeetings(),
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(top: 4, bottom: 80),
+                          itemCount: meetingProvider.filteredMeetings.length,
+                          itemBuilder: (context, index) {
                           final meeting = meetingProvider.filteredMeetings[index];
                           final isToday = meeting.isToday;
                           final isPast = meeting.isPast;

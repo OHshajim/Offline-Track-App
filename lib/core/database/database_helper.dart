@@ -16,7 +16,7 @@ class DatabaseHelper {
   DatabaseHelper._init();
 
   Future<Database> get database async {
-    if (_database != null) return _database!;
+    if (_database != null && _database!.isOpen) return _database!;
     _database = await _initDB('offlinetrack.db');
     return _database!;
   }
@@ -44,6 +44,13 @@ class DatabaseHelper {
       version: 1,
       onCreate: _createDB,
     );
+  }
+
+  Future<void> close() async {
+    if (_database != null && _database!.isOpen) {
+      await _database!.close();
+      _database = null;
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -13,6 +13,7 @@ import '../../widgets/voice_assistant_modal.dart';
 import '../tasks/task_form_screen.dart';
 import '../meetings/meeting_form_screen.dart';
 import '../leads/lead_form_screen.dart';
+import '../settings/settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -214,6 +215,14 @@ class _DashboardScreenState extends State<DashboardScreen>
             icon: const Icon(Icons.refresh_rounded, size: 22),
             tooltip: 'Refresh',
             onPressed: _refreshData,
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, size: 22),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
           ),
           // Single voice orb — the only voice entry on dashboard
           Padding(

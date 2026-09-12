@@ -67,15 +67,15 @@ class _VoiceOrbWidgetState extends State<VoiceOrbWidget>
     final isListening = voiceService.isListening;
     final isSpeaking = voiceService.isSpeaking;
 
-    Color coreColor = AppTheme.primaryViolet;
-    Color glowColor = AppTheme.accentCyan;
+    Color coreColor = AppTheme.primaryCyan;
+    Color glowColor = AppTheme.cyanGlow;
 
     if (isListening) {
       coreColor = AppTheme.accentRose;
       glowColor = AppTheme.accentAmber;
     } else if (isSpeaking) {
       coreColor = AppTheme.accentEmerald;
-      glowColor = AppTheme.accentCyan;
+      glowColor = AppTheme.primaryCyan;
     }
 
     return AnimatedBuilder(
@@ -93,9 +93,9 @@ class _VoiceOrbWidgetState extends State<VoiceOrbWidget>
                 gradient: RadialGradient(
                   colors: [
                     coreColor,
-                    const Color(0xFF1E1B4B),
+                    const Color(0xFF060B14),
                   ],
-                  stops: const [0.3, 1.0],
+                  stops: const [0.25, 1.0],
                 ),
                 boxShadow: [
                   BoxShadow(
